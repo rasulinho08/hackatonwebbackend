@@ -1,0 +1,9 @@
+# Activate with: SPRING_PROFILES_ACTIVE=prod
+spring:
+  jpa:
+    show-sql: false
+    hibernate:
+      ddl-auto: update
+
+server:
+  forward-headers-strategy: framework
