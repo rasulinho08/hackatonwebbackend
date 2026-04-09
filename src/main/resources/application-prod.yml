@@ -23,11 +23,11 @@ spring:
     properties:
       hibernate:
         format_sql: false
-        # Avoid startup failure when JDBC metadata is not yet available (empty/misconfigured URL).
-        dialect: org.hibernate.dialect.PostgreSQLDialect
 
 server:
   port: ${PORT:8080}
+  # Render / PaaS: must accept traffic on all interfaces (not only loopback).
+  address: 0.0.0.0
   forward-headers-strategy: framework
 
 app:
@@ -47,7 +47,9 @@ app:
     groq-model: ${GROQ_MODEL:llama-3.3-70b-versatile}
 
 jwt:
-  secret: ${JWT_SECRET}
+  # Render: if JWT_SECRET is missing, Spring used to fail before Tomcat started → "No open ports detected".
+  # Default is long enough for HS256; set a strong random JWT_SECRET in production.
+  secret: ${JWT_SECRET:INSECURE-DEFAULT-SET-JWT-SECRET-ENV-VAR-ON-RENDER-MIN-32-CHARS}
   expiration-ms: ${JWT_EXPIRATION_MS:86400000}
 
 springdoc:
