@@ -15,6 +15,9 @@ import java.util.Map;
 /**
  * Render/Heroku-style {@code DATABASE_URL} ({@code postgres://} / {@code postgresql://}) is not valid
  * for Spring JDBC. Maps it to {@code spring.datasource.*} when {@code DB_URL} is not set.
+ * <p>
+ * Runs for any non-{@code test} profile: on Render, {@code getActiveProfiles()} is often still empty
+ * when this runs, so a {@code prod}-only check skipped mapping and left the datasource on {@code localhost}.
  */
 public class DatabaseUrlEnvironmentPostProcessor implements EnvironmentPostProcessor {
 
@@ -22,7 +25,7 @@ public class DatabaseUrlEnvironmentPostProcessor implements EnvironmentPostProce
 
     @Override
     public void postProcessEnvironment(ConfigurableEnvironment environment, SpringApplication application) {
-        if (!isProdProfileActive(environment)) {
+        if (isTestProfileActive(environment)) {
             return;
         }
 
@@ -31,7 +34,10 @@ public class DatabaseUrlEnvironmentPostProcessor implements EnvironmentPostProce
             return;
         }
 
-        String databaseUrl = environment.getProperty("DATABASE_URL");
+        String databaseUrl = firstNonBlank(
+                environment.getProperty("DATABASE_URL"),
+                System.getenv("DATABASE_URL")
+        );
         if (databaseUrl == null || databaseUrl.isBlank()) {
             return;
         }
@@ -49,21 +55,28 @@ public class DatabaseUrlEnvironmentPostProcessor implements EnvironmentPostProce
         environment.getPropertySources().addFirst(new MapPropertySource(SOURCE, new HashMap<>(props)));
     }
 
-    private static boolean isProdProfileActive(ConfigurableEnvironment environment) {
+    private static String firstNonBlank(String a, String b) {
+        if (a != null && !a.isBlank()) {
+            return a;
+        }
+        if (b != null && !b.isBlank()) {
+            return b;
+        }
+        return null;
+    }
+
+    private static boolean isTestProfileActive(ConfigurableEnvironment environment) {
         for (String p : environment.getActiveProfiles()) {
-            if ("prod".equalsIgnoreCase(p)) {
+            if ("test".equalsIgnoreCase(p)) {
                 return true;
             }
         }
         String explicit = environment.getProperty("spring.profiles.active");
-        if (explicit != null) {
-            for (String p : explicit.split(",")) {
-                if ("prod".equalsIgnoreCase(p.trim())) {
-                    return true;
-                }
-            }
+        if (explicit != null && explicit.toLowerCase().contains("test")) {
+            return true;
         }
-        return false;
+        String envProfiles = System.getenv("SPRING_PROFILES_ACTIVE");
+        return envProfiles != null && envProfiles.toLowerCase().contains("test");
     }
 
     /**
