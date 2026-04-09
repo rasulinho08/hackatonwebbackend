@@ -49,6 +49,12 @@
             <artifactId>postgresql</artifactId>
             <scope>runtime</scope>
         </dependency>
+        <!-- Optional .env in project root for local dev (ignored by git); hosting uses real env vars -->
+        <dependency>
+            <groupId>io.github.cdimascio</groupId>
+            <artifactId>dotenv-java</artifactId>
+            <version>3.0.0</version>
+        </dependency>
 
         <dependency>
             <groupId>org.projectlombok</groupId>
@@ -110,6 +116,8 @@
     </dependencies>
 
     <build>
+        <!-- Predictable jar name for Docker: target/soc-backend.jar -->
+        <finalName>soc-backend</finalName>
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>

@@ -1,0 +1,31 @@
+# Git / IDE
+.git
+.gitignore
+.github
+.idea
+.vscode
+*.iml
+
+# Build output (fresh build inside Docker)
+target/
+
+# Local secrets
+.env
+.env.*
+!.env.example
+
+# Not needed in image
+*.md
+!README.md
+node_modules/
+package-lock.json
+package.json
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Misc
+*.log
+*.tmp
+TestConn.java

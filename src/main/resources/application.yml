@@ -23,7 +23,8 @@ spring:
         format_sql: true
 
 server:
-  port: ${SERVER_PORT:8085}
+  # PORT: PaaS (Fly.io, Railway, Render). SERVER_PORT: local override. Default 8080 for Docker.
+  port: ${PORT:${SERVER_PORT:8080}}
 
 app:
   demo-mode: ${APP_DEMO_MODE:false}
