@@ -25,4 +25,12 @@ class DatabaseUrlEnvironmentPostProcessorTest {
         assertThat(m.get("username")).isEqualTo("u");
         assertThat(m.get("password")).isEqualTo("p");
     }
+
+    @Test
+    void addsPrepareThresholdForTransactionPoolerPort() {
+        Map<String, String> m = DatabaseUrlEnvironmentPostProcessor.mapDatabaseUrl(
+                "postgresql://u:p@pool.example.com:6543/mydb");
+        assertThat(m.get("url")).contains("prepareThreshold=0");
+        assertThat(m.get("url")).contains("sslmode=require");
+    }
 }

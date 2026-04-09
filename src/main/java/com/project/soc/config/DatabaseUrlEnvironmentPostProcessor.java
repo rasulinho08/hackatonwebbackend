@@ -56,6 +56,8 @@ public class DatabaseUrlEnvironmentPostProcessor implements EnvironmentPostProce
         props.put("spring.datasource.username", mapped.get("username"));
         props.put("spring.datasource.password", mapped.get("password"));
 
+        System.err.println("[soc-backend] Mapped DATABASE_URL -> " + mapped.get("url"));
+
         environment.getPropertySources().addFirst(new MapPropertySource(SOURCE, new HashMap<>(props)));
     }
 
@@ -124,7 +126,12 @@ public class DatabaseUrlEnvironmentPostProcessor implements EnvironmentPostProce
             if (query != null && !query.isBlank()) {
                 jdbc = jdbc + "?" + query;
             } else {
-                jdbc = jdbc + "?sslmode=require";
+                // Supabase transaction pooler (6543) + PgBouncer: disable server-side prepared statements.
+                if (port == 6543) {
+                    jdbc = jdbc + "?sslmode=require&prepareThreshold=0";
+                } else {
+                    jdbc = jdbc + "?sslmode=require";
+                }
             }
 
             out.put("url", jdbc);
