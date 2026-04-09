@@ -44,6 +44,10 @@ public class DatabaseUrlEnvironmentPostProcessor implements EnvironmentPostProce
 
         Map<String, String> mapped = mapDatabaseUrl(databaseUrl);
         if (mapped.isEmpty()) {
+            // Visible in Render logs — otherwise failure looks like a random Hibernate error.
+            System.err.println("[soc-backend] DATABASE_URL is set but JDBC mapping failed. "
+                    + "Use pooler URL from Supabase (IPv4), URL-encode special chars in password, "
+                    + "or set DB_URL (jdbc:postgresql://...) + DB_USERNAME + DB_PASSWORD instead.");
             return;
         }
 
@@ -126,8 +130,8 @@ public class DatabaseUrlEnvironmentPostProcessor implements EnvironmentPostProce
             out.put("url", jdbc);
             out.put("username", user);
             out.put("password", password);
-        } catch (Exception ignored) {
-            // leave empty; Spring will surface a clearer datasource error
+        } catch (Exception e) {
+            System.err.println("[soc-backend] DATABASE_URL parse error: " + e.getClass().getSimpleName() + ": " + e.getMessage());
         }
         return out;
     }
